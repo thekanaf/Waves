@@ -8,6 +8,7 @@ import com.wavesplatform.settings.RestAPISettings
 import com.wavesplatform.state2.StateReader
 import io.netty.channel.group.ChannelGroup
 import io.swagger.annotations._
+import play.api.libs.json.JsNumber
 import scorex.BroadcastRoute
 import scorex.account.Address
 import scorex.api.http._
@@ -72,9 +73,10 @@ case class LeaseApiRoute(settings: RestAPISettings, wallet: Wallet, state: State
       Address.fromString(address) match {
         case Left(e) => ApiError.fromValidationError(e)
         case Right(a) =>
-          state().activeLeases()
+          state().accountTransactionIds(a, Int.MaxValue)
             .flatMap(state().transactionInfo)
-            .collect { case (_, Some(lt: LeaseTransaction)) if lt.sender.address == address => lt }
+            .collect { case (h, Some(lt: LeaseTransaction)) if lt.sender.address == address && state().isLeaseActive(lt) => (h, lt) }
+            .map { case (h, lt) => lt.json() + ("height" -> JsNumber(h)) }
       })
     }
   }
