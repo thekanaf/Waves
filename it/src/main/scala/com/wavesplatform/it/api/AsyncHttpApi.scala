@@ -473,6 +473,8 @@ object AsyncHttpApi extends Assertions {
 
     def debugStateAt(height: Long): Future[Map[String, Long]] = getWithApiKey(s"/debug/stateWaves/$height").as[Map[String, Long]]
 
+    def debugMinerInfo(): Future[Seq[String]] = getWithApiKey(s"/debug/minerInfo").as[Seq[String]]
+
     def debugPortfoliosFor(address: String, considerUnspent: Boolean): Future[Portfolio] = {
       getWithApiKey(s"/debug/portfolios/$address?considerUnspent=$considerUnspent")
     }.as[Portfolio]

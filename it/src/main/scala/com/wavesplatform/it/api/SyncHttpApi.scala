@@ -51,6 +51,9 @@ object SyncHttpApi extends Assertions {
     def get(path: String): Response =
       Await.result(async(n).get(path), RequestAwaitTime)
 
+    def getWithApiKey(path: String): Response =
+      Await.result(async(n).getWithApiKey(path), RequestAwaitTime)
+
     def postJson[A: Writes](path: String, body: A): Response =
       Await.result(async(n).postJson(path, body), RequestAwaitTime)
 
@@ -130,6 +133,15 @@ object SyncHttpApi extends Assertions {
 
     def waitForTransaction(txId: String, retryInterval: FiniteDuration = 1.second): Transaction =
       Await.result(async(n).waitForTransaction(txId), RequestAwaitTime)
+
+    def debugStateAt(height: Long): Map[String, Long] =
+      Await.result(async(n).debugStateAt(height), RequestAwaitTime)
+
+    def debugMinerInfo(): Seq[String] =
+      Await.result(async(n).debugMinerInfo(), RequestAwaitTime)
+
+    def waitForHeight(expectedHeight: Int, requestAwaitTime: FiniteDuration = RequestAwaitTime): Int =
+      Await.result(async(n).waitForHeight(expectedHeight), requestAwaitTime)
   }
 
   implicit class NodesExtSync(nodes: Seq[Node]) {
@@ -145,8 +157,8 @@ object SyncHttpApi extends Assertions {
     def waitForHeightAraise(): Unit =
       Await.result(async(nodes).waitForHeightAraise(), TxInBlockchainAwaitTime)
 
-    def waitForSameBlocksAt(retryInterval: FiniteDuration, height: Int): Boolean =
-      Await.result(async(nodes).waitForSameBlocksAt(retryInterval, height), ConditionAwaitTime)
+    def waitForSameBlocksAt(retryInterval: FiniteDuration, height: Int, awaitTime: FiniteDuration = 5.minutes): Boolean =
+      Await.result(async(nodes).waitForSameBlocksAt(retryInterval, height), awaitTime)
 
     def waitFor[A](desc: String)(retryInterval: FiniteDuration)(request: Node => A, cond: Iterable[A] => Boolean): Boolean =
       Await.result(
